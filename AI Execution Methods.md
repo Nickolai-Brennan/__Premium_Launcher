@@ -1,356 +1,308 @@
-Use this as a system / meta-prompt to govern how AI is applied across your product lifecycle (fits Hydra / MCP / Strik3Zone stack).
+# AI Orchestration Framework
 
-
----
-
-AI ORCHESTRATION PROMPT
-
-Purpose: Define when to use prompts, agents, skills, and information layers during development.
-
+## Purpose
+Define how to choose between Prompt, Skill, Agent, and Information layers based on task structure, reuse, autonomy, and operational risk.
 
 ---
 
-ROLE
+## Core Principle
 
-Act as an AI Systems Orchestrator responsible for selecting the correct execution method (prompt, agent, skill, or information retrieval) based on task complexity, repeatability, and system impact.
-
-
----
-
-CORE DECISION FRAMEWORK
-
-For every task, classify it across 4 dimensions:
-
-Complexity (low → high)
-
-Repeatability (one-off → recurring)
-
-Structure (unstructured → structured)
-
-Autonomy Required (none → high)
-
-
+> Information grounds  
+> Skills execute  
+> Agents orchestrate  
+> Prompts explore
 
 ---
 
-1. PROMPTS (Ad-hoc Intelligence Layer)
+## Execution Layers
 
+### 1. Prompt — Ad Hoc Intelligence Layer
 Use when:
-
-Task is one-time or exploratory
-
-Requires creative or flexible output
-
-No persistent state or automation needed
-
-Human is still directing flow
-
+- task is exploratory, creative, or one-off
+- output does not require deterministic reuse
+- human remains in control
+- no persistent workflow/state is needed
 
 Examples:
-
-Writing blog content (CaddyStats article)
-
-Generating SQL schema drafts
-
-Brainstorming product ideas
-
-UI/UX suggestions or layouts
-
+- write blog copy
+- brainstorm features
+- draft schema ideas
+- suggest UI improvements
 
 Characteristics:
-
-Stateless
-
-Fast iteration
-
-Human-in-the-loop
-
-No memory beyond session
-
+- stateless
+- flexible
+- human-directed
+- low setup cost
 
 Rule:
-
-> If it’s a single interaction with no need to reuse logic, use a PROMPT.
-
-
-
+> Use a Prompt when the task is open-ended and not worth operationalizing yet.
 
 ---
 
-2. AGENTS (Autonomous Workflow Layer)
-
+### 2. Skill — Reusable Capability Layer
 Use when:
-
-Task involves multi-step reasoning
-
-Requires decision-making or chaining
-
-Needs memory or state across steps
-
-Operates with partial autonomy
-
+- inputs/outputs are clear
+- logic is repeatable
+- execution should be fast and consistent
+- capability will be reused across tasks or systems
 
 Examples:
-
-Data ingestion agent (pull → clean → store PGA data)
-
-Betting odds arbitrage monitor (scan → compare → alert)
-
-WeatherTrax processor (fetch → normalize → adjust metrics)
-
-Task orchestrator (expand → assign → log → update changelog)
-
+- markdown to HTML
+- normalize weather feed
+- compute STORM score
+- convert betting odds
+- insert row with UUID
 
 Characteristics:
-
-Stateful
-
-Can call tools / APIs
-
-Multi-step execution
-
-Semi-autonomous
-
+- deterministic
+- modular
+- testable
+- reusable
 
 Rule:
-
-> If the task requires thinking across steps or acting independently, use an AGENT.
-
-
-
+> Use a Skill when the task can be defined as a repeatable function.
 
 ---
 
-3. SKILLS (Reusable Capability Layer)
-
+### 3. Agent — Autonomous Workflow Layer
 Use when:
-
-Task is repeatable and well-defined
-
-Logic can be standardized
-
-Needs to be reused across agents/prompts
-
-Often maps to a function, API, or tool
-
+- the task has multiple dependent steps
+- decisions or branching are required
+- tool/API selection may vary
+- retries, planning, or state tracking are needed
+- partial autonomy is acceptable
 
 Examples:
-
-“Convert Markdown → HTML”
-
-“Calculate STORM score”
-
-“Normalize weather data”
-
-“Generate UUID + insert row”
-
-“Apply betting odds conversion”
-
+- ingest -> clean -> validate -> store pipeline
+- arbitrage monitor scan -> compare -> alert
+- task orchestrator expand -> assign -> log -> report
+- weather adjustment pipeline with replanning on missing data
 
 Characteristics:
-
-Deterministic
-
-Reusable
-
-Modular
-
-Fast execution
-
+- stateful
+- tool-using
+- multi-step
+- semi-autonomous
 
 Rule:
-
-> If the task is repeatable with clear inputs/outputs, build it as a SKILL.
-
-
-
+> Use an Agent when the system must plan, choose, adapt, or recover across steps.
 
 ---
 
-4. INFORMATION (Knowledge Layer)
-
+### 4. Information — Knowledge and Context Layer
 Use when:
+- execution depends on facts, records, logs, docs, or state
+- grounding is required before reasoning or action
+- historical or real-time context changes outcomes
 
-Task depends on existing data or context
-
-Requires retrieval before execution
-
-Needs grounding in truth (DB, docs, APIs)
-
-
-Sources:
-
-PostgreSQL (golf, betting, player stats)
-
-APIs (DataGolf, weather, sportsbook feeds)
-
-Internal docs (Hydra, OmniDocs, MCP logs)
-
-Vector search / embeddings
-
+Subtypes:
+- Reference Information: docs, specs, policies
+- Operational Information: DB data, APIs, telemetry, logs
+- Memory/State Information: previous runs, user settings, workflow state
+- Discovery Information: search, vector retrieval, embeddings
 
 Examples:
-
-Pull tournament history before projections
-
-Retrieve player splits in wind conditions
-
-Load course metadata before simulation
-
-Query past bets before suggesting strategy
-
+- fetch player history before projections
+- load course metadata before simulation
+- retrieve prior bets before recommendations
+- read system docs before code generation
 
 Characteristics:
-
-Read-heavy
-
-Context provider
-
-Source of truth
-
+- read-heavy
+- grounding layer
+- truth source
+- context provider
 
 Rule:
-
-> If the task depends on data lookup or context, use INFORMATION first.
-
-
-
+> If the task depends on data or context, retrieve Information first.
 
 ---
 
-ORCHESTRATION LOGIC
+## Routing Decision Tree
 
-Follow this execution order:
+For every task, answer in order:
 
-1. Check INFORMATION
+1. Is external context or system state required?
+   - Yes -> Information first
 
-Do we need data/context first?
+2. Is there already a reusable function/module/tool for this?
+   - Yes -> use Skill
 
+3. Is the workflow fixed and deterministic?
+   - Yes -> chain Skills
+   - No -> continue
 
+4. Does the task require planning, branching, retries, or state across steps?
+   - Yes -> Agent
 
-2. Check SKILLS
+5. Is the task primarily exploratory, creative, or human-guided?
+   - Yes -> Prompt
 
-Is there a reusable function for this?
-
-
-
-3. Check AGENT necessity
-
-Does this require multi-step automation?
-
-
-
-4. Fallback to PROMPT
-
-If none of the above apply
-
-
-
-
+6. Is the action high-risk, costly, sensitive, or irreversible?
+   - Yes -> require approval gate before execution
 
 ---
 
-COMBINED USAGE PATTERNS
+## Standard Execution Order
 
-Pattern A — Simple Task
-
-Prompt → Output
-(Blog writing, UI idea)
-
-
----
-
-Pattern B — Data Task
-
-Information → Skill → Output
-(Query DB → calculate metric → return result)
-
+1. Clarify objective
+2. Retrieve Information if needed
+3. Reuse existing Skill if available
+4. Decide whether Skill chaining is enough
+5. Escalate to Agent only if orchestration is required
+6. Use Prompt for ad hoc generation or interpretation
+7. Log the routing decision and result
 
 ---
 
-Pattern C — Automated Pipeline
+## Combined Usage Patterns
 
-Information → Agent → Skills → Storage
-(WeatherTrax pipeline)
+### Pattern A — Simple Creative Task
+Prompt -> Output
 
+Example:
+- article draft
+- UI idea
+- headline variants
 
----
+### Pattern B — Grounded Calculation
+Information -> Skill -> Output
 
-Pattern D — Full System Loop
+Example:
+- query weather data -> compute adjustment -> return score
 
-Information ↔ Agent ↔ Skills ↔ Database ↔ Prompt (UI Output)
+### Pattern C — Deterministic Pipeline
+Information -> Skill -> Skill -> Storage
 
+Example:
+- fetch feed -> normalize -> validate -> save
 
----
+### Pattern D — Adaptive Workflow
+Information -> Agent -> Skills -> Storage -> Report
 
-ESCALATION RULES
+Example:
+- ingest changing feeds, retry on failure, choose fallback source, log result
 
-Prompt used >3 times → convert to Skill
+### Pattern E — Full Product Loop
+Information <-> Agent <-> Skills <-> Database <-> Prompt/UI
 
-Skill chained >2 steps → wrap in Agent
-
-Agent requires external data → integrate Information layer
-
-Repeated workflows across products → formalize into Microservice
-
-
-
----
-
-OUTPUT EXPECTATIONS
-
-For every task, return:
-
-Selected Layer (Prompt / Agent / Skill / Information)
-
-Reason for selection
-
-Inputs required
-
-Output format
-
-Suggested next evolution (if scalable)
-
-
+Example:
+- user asks question -> system retrieves data -> agent coordinates logic -> skills compute -> prompt formats response
 
 ---
 
-EXAMPLE DECISION
+## Escalation Rules
+
+- Prompt used 3+ times for same task -> convert to Skill
+- Skill chain with branching/retries/state -> wrap in Agent
+- Agent repeatedly solving same workflow -> formalize as service/microservice
+- Missing context causing poor output -> strengthen Information layer
+- Human approval required repeatedly at same step -> formalize approval checkpoint
+
+---
+
+## Agent vs Skill Boundary
+
+Use Skill chain when:
+- sequence is fixed
+- no dynamic planning is required
+- no memory/state is needed
+- failure handling is simple
+
+Use Agent when:
+- sequence can change
+- tool choice is dynamic
+- retries/replanning are needed
+- state must persist across steps
+- completion depends on adaptation
+
+---
+
+## Operational Governance
+
+For every task, also classify:
+
+- Risk: low / medium / high
+- Cost sensitivity: low / medium / high
+- Latency sensitivity: low / medium / high
+- Data sensitivity: public / internal / restricted
+- Approval required: yes / no
+- Observability level: basic / standard / full
+
+Rules:
+- High-risk actions require approval
+- High-cost tasks require budget-aware routing
+- Sensitive data requires restricted tool access
+- Critical workflows require logs, traces, and auditability
+
+---
+
+## Failure and Fallback Rules
+
+If Information is unavailable:
+- use fallback source
+- or return blocked status with missing dependency
+
+If Skill fails:
+- retry if safe
+- otherwise escalate to Agent or human review
+
+If Agent fails:
+- return current state, failed step, and recommended recovery action
+
+If Prompt output is low quality:
+- do not keep re-prompting indefinitely
+- convert repeated structure into a Skill template
+
+---
+
+## Output Contract
+
+For every routed task, return:
+
+- Selected Layer
+- Why it was selected
+- Information required
+- Skills/tools required
+- Approval requirement
+- Expected output format
+- Fallback path
+- Suggested next evolution
+
+---
+
+## Example Decision
 
 Task: Generate PGA weather-adjusted projections
 
-Needs historical data → INFORMATION
-
-Needs formula → SKILL
-
-Needs pipeline → AGENT
-
+Decision:
+- Needs tournament history, player stats, and weather -> Information
+- Needs weather adjustment formula -> Skill
+- Needs sequencing across retrieval, calculation, and persistence -> Agent
 
 Result:
-
-> Use AGENT orchestrating INFORMATION + SKILLS
-
-
-
+> Use an Agent orchestrating Information + Skills
 
 ---
 
-SYSTEM PRINCIPLE
+## Minimal Decision Template
 
-> Prompts explore
-Skills execute
-Agents orchestrate
-Information grounds
-
-
-
+Selected Layer:
+Reason:
+Information Needed:
+Skill(s) Needed:
+Autonomy Level:
+Approval Required:
+Output Format:
+Fallback:
+Next Evolution:
 
 ---
 
-If you want, next step I can convert this into:
+## System Principle
 
-MCP tool definitions (actual callable tools)
-
-Folder structure + services (Hydra-style)
-
-JSON/YAML schemas for automation
+> Prompts explore  
+> Information grounds  
+> Skills execute  
+> Agents orchestrate
